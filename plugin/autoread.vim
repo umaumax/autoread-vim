@@ -2,31 +2,50 @@ if has('nvim')
 	" NOTE: nvimのautoreadは自動的に上書きをしてしまう
 	set noautoread
 	let b:pre_timestamp=-1
-	function! s:checktime()
-		let filepath=resolve(expand('%:p'))
-		if !filereadable(filepath)
-			return
+	function! s:gettimestamp(filepath)
+		if !filereadable(a:filepath)
+			return -1
 		endif
 		if has('mac')
-			let b:timestamp=0+substitute(system('stat -f %m '.filepath),'\n','','')
+			let timestamp=0+substitute(system('stat -f %m '.a:filepath),'\n','','')
 		elseif !has('win')
-			let b:timestamp=0+substitute(system('stat -c %Y '.filepath),'\n','','')
+			let timestamp=0+substitute(system('stat -c %Y '.a:filepath),'\n','','')
 		endif
-		if b:pre_timestamp==-1
-			let b:pre_timestamp=b:timestamp
+		return timestamp
+	endfunction
+	function! s:updatetime(timestamp)
+		let b:pre_timestamp = a:timestamp
+	endfunction
+	function! s:update_this_file_time()
+		let filepath=resolve(expand('%:p'))
+		let timestamp = s:gettimestamp(filepath)
+		if timestamp == -1
 			return
 		endif
-		if b:pre_timestamp < b:timestamp
+		call s:updatetime(timestamp)
+	endfunction
+	function! s:checktime()
+		let filepath=resolve(expand('%:p'))
+		let timestamp = s:gettimestamp(filepath)
+		if timestamp == -1
+			return
+		endif
+		if b:pre_timestamp==-1
+			call s:updatetime(timestamp)
+			return
+		endif
+		if b:pre_timestamp < timestamp
 			" reload
 			:edit!
 		endif
-		let b:pre_timestamp = b:timestamp
+		call s:updatetime(timestamp)
 	endfunction
 	command! Checktime call <SID>checktime()
 	augroup file_autoread_checktime
 		au!
 		" gvim has auto reload function
 		if !has("gui_running")
+			autocmd BufWritePost * silent! call <SID>update_this_file_time()
 			"silent! necessary otherwise throws errors when using command line window.
 			autocmd BufEnter      * silent! call <SID>checktime()
 			autocmd CursorHold    * silent! call <SID>checktime()
@@ -34,8 +53,6 @@ if has('nvim')
 			"these two _may_ slow things down. Remove if they do.
 			autocmd CursorMoved   * silent! call <SID>checktime()
 			autocmd CursorMovedI  * silent! call <SID>checktime()
-			" 			au FocusLost,WinLeave * :silent! noautocmd w
-			" 			au FocusLost,WinLeave * :silent! w
 		endif
 	augroup END
 else
@@ -45,12 +62,12 @@ else
 		" gvim has auto reload function
 		if !has("gui_running")
 			"silent! necessary otherwise throws errors when using command line window.
-			autocmd BufEnter     <buffer> * silent! checktime
-			autocmd CursorHold   <buffer> * silent! checktime
-			autocmd CursorHoldI  <buffer> * silent! checktime
+			autocmd BufEnter      * silent! checktime
+			autocmd CursorHold    * silent! checktime
+			autocmd CursorHoldI   * silent! checktime
 			"these two _may_ slow things down. Remove if they do.
-			autocmd CursorMoved  <buffer> * silent! checktime
-			autocmd CursorMovedI <buffer> * silent! checktime
+			autocmd CursorMoved   * silent! checktime
+			autocmd CursorMovedI  * silent! checktime
 			" 			au FocusLost,WinLeave * :silent! noautocmd w
 			" 			au FocusLost,WinLeave * :silent! w
 		endif
