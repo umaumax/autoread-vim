@@ -49,12 +49,11 @@ if has('nvim')
 		if !has("gui_running")
 			autocmd BufWritePost * silent! call <SID>update_this_file_time()
 			"silent! necessary otherwise throws errors when using command line window.
-			autocmd BufEnter      * silent! call <SID>checktime()
-			autocmd CursorHold    * silent! call <SID>checktime()
-			autocmd CursorHoldI   * silent! call <SID>checktime()
+			autocmd BufEnter * silent! call <SID>checktime()
+			autocmd CursorHold,CursorHoldI,InsertEnter,InsertLeave,CmdlineEnter,CmdLineLeave * silent! call <SID>checktime()
 			"these two _may_ slow things down. Remove if they do.
-			autocmd CursorMoved   * silent! call <SID>checktime()
-			autocmd CursorMovedI  * silent! call <SID>checktime()
+			" autocmd CursorMoved   * silent! call <SID>checktime()
+			" autocmd CursorMovedI  * silent! call <SID>checktime()
 		endif
 	augroup END
 else
@@ -65,13 +64,10 @@ else
 		if !has("gui_running")
 			"silent! necessary otherwise throws errors when using command line window.
 			autocmd BufEnter      * silent! checktime
-			autocmd CursorHold    * silent! checktime
-			autocmd CursorHoldI   * silent! checktime
+			autocmd CursorHold,CursorHoldI,InsertEnter,InsertLeave,CmdlineEnter,CmdLineLeave * silent! checktime
 			"these two _may_ slow things down. Remove if they do.
-			autocmd CursorMoved   * silent! checktime
-			autocmd CursorMovedI  * silent! checktime
-			" 			au FocusLost,WinLeave * :silent! noautocmd w
-			" 			au FocusLost,WinLeave * :silent! w
+			" 			autocmd CursorMoved   * silent! checktime
+			" 			autocmd CursorMovedI  * silent! checktime
 		endif
 	augroup END
 endif
