@@ -37,6 +37,8 @@ if has('nvim')
 		if b:pre_timestamp < timestamp
 			" reload
 			:edit!
+			" NOTE: 次のreloadがないと，更新があった状態で:を押下してcmdlineモードに入ったときに画面の状態が更新されない
+			:redraw!
 		endif
 		call s:updatetime(timestamp)
 	endfunction
