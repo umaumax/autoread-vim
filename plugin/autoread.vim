@@ -1,3 +1,16 @@
+" NOTE: 1sec interval and disable while using terryma/vim-multiple-cursors
+let b:pre_second=-1
+function! s:check_update_interval()
+	if b:pre_second==strftime('%c')
+		return 0
+	endif
+	let b:pre_second=strftime('%c')
+	if get(g:, 'multi_cursor_inputing', 0)
+		return 0
+	endif
+	return 1
+endfunction
+
 if has('nvim')
 	" NOTE: nvimのautoreadは自動的に上書きをしてしまう
 	set noautoread
@@ -50,13 +63,19 @@ if has('nvim')
 			autocmd BufWritePost * silent! call <SID>update_this_file_time()
 			"silent! necessary otherwise throws errors when using command line window.
 			autocmd BufEnter * silent! call <SID>checktime()
-			autocmd CursorHold,CursorHoldI,InsertEnter,InsertLeave,CmdlineEnter,CmdLineLeave * silent! call <SID>checktime()
+
+			" NOTE: terryma/vim-multiple-cursors often leave insert mode
+			autocmd CursorHold,CursorHoldI,InsertEnter,InsertLeave,CmdlineEnter,CmdLineLeave *
+						\		if s:check_update_interval()
+						\|		silent! call <SID>checktime()
+						\|	endif
 			"these two _may_ slow things down. Remove if they do.
 			" autocmd CursorMoved   * silent! call <SID>checktime()
 			" autocmd CursorMovedI  * silent! call <SID>checktime()
 		endif
 	augroup END
 else
+	" NOTE: normal vim
 	set autoread
 	augroup file_autoread_checktime
 		au!
@@ -64,7 +83,10 @@ else
 		if !has("gui_running")
 			"silent! necessary otherwise throws errors when using command line window.
 			autocmd BufEnter      * silent! checktime
-			autocmd CursorHold,CursorHoldI,InsertEnter,InsertLeave,CmdlineEnter,CmdLineLeave * silent! checktime
+			autocmd CursorHold,CursorHoldI,InsertEnter,InsertLeave,CmdlineEnter,CmdLineLeave *
+						\		if s:check_update_interval()
+						\|		silent! checktime
+						\|	endif
 			"these two _may_ slow things down. Remove if they do.
 			" 			autocmd CursorMoved   * silent! checktime
 			" 			autocmd CursorMovedI  * silent! checktime
