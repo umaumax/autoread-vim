@@ -1,10 +1,10 @@
-" NOTE: 1sec interval and disable while using terryma/vim-multiple-cursors
-let b:pre_second=-1
+" NOTE: 1sec interval or while using terryma/vim-multiple-cursors
+let g:pre_second=-1
 function! s:check_update_interval()
-	if b:pre_second==strftime('%c')
+	if g:pre_second==strftime('%c')
 		return 0
 	endif
-	let b:pre_second=strftime('%c')
+	let g:pre_second=strftime('%c')
 	if get(g:, 'multi_cursor_inputing', 0)
 		return 0
 	endif
