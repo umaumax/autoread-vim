@@ -1,4 +1,5 @@
 " NOTE: 1sec interval or while using terryma/vim-multiple-cursors
+" NOTE: reltimestr(reltime())
 let g:pre_second=-1
 function! s:check_update_interval()
 	if g:pre_second==strftime('%c')
