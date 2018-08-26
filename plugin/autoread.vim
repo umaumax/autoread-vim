@@ -2,10 +2,10 @@
 " NOTE: reltimestr(reltime())
 let g:pre_second=-1
 function! s:check_update_interval()
-	if g:pre_second==strftime('%c')
+	if g:pre_second==strftime('%s')
 		return 0
 	endif
-	let g:pre_second=strftime('%c')
+	let g:pre_second=strftime('%s')
 	if get(g:, 'multi_cursor_inputing', 0)
 		return 0
 	endif
