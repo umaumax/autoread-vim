@@ -16,20 +16,23 @@ if has('nvim')
 	" NOTE: nvimのautoreadは自動的に上書きをしてしまう
 	set noautoread
 	let b:pre_timestamp=-1
+
 	function! s:gettimestamp(filepath)
 		if !filereadable(a:filepath)
 			return -1
 		endif
 		if has('mac')
-			let timestamp=0+substitute(system('stat -f %m '.a:filepath),'\n','','')
+			let timestamp=0+substitute(system('stat -f %m '.shellescape(a:filepath)),'\n','','')
 		elseif !has('win')
-			let timestamp=0+substitute(system('stat -c %Y '.a:filepath),'\n','','')
+			let timestamp=0+substitute(system('stat -c %Y '.shellescape(a:filepath)),'\n','','')
 		endif
 		return timestamp
 	endfunction
+
 	function! s:updatetime(timestamp)
 		let b:pre_timestamp = a:timestamp
 	endfunction
+
 	function! s:update_this_file_time()
 		let filepath=resolve(expand('%:p'))
 		let timestamp = s:gettimestamp(filepath)
@@ -38,6 +41,7 @@ if has('nvim')
 		endif
 		call s:updatetime(timestamp)
 	endfunction
+
 	function! s:checktime()
 		let filepath=resolve(expand('%:p'))
 		let timestamp = s:gettimestamp(filepath)
@@ -56,6 +60,7 @@ if has('nvim')
 		endif
 		call s:updatetime(timestamp)
 	endfunction
+
 	command! Checktime call <SID>checktime()
 	augroup file_autoread_checktime
 		au!
@@ -70,7 +75,7 @@ if has('nvim')
 						\		if s:check_update_interval()
 						\|		silent! call <SID>checktime()
 						\|	endif
-			"these two _may_ slow things down. Remove if they do.
+			" NOTE: these two _may_ slow things down. Remove if they do.
 			" autocmd CursorMoved   * silent! call <SID>checktime()
 			" autocmd CursorMovedI  * silent! call <SID>checktime()
 		endif
